@@ -22,6 +22,10 @@ class Platformer extends Phaser.Scene {
         this.playerLives = [];
         my.sprite.enemyBullet = [];
         this.enemyBulletCooldownCounter = 0;
+        this.bulletGroup;
+        this.bulletVals = [];
+
+        this.groundLayer;
     }
 
     create() {
@@ -35,6 +39,7 @@ class Platformer extends Phaser.Scene {
         this.tileset = this.map.addTilesetImage("World-1-D-packed", "tilemap_tiles");
 
         // Create a layer
+        this.background = this.map.createLayer("Background", this.tileset, 0, 0);
         this.groundLayer = this.map.createLayer("Ground-n-Platforms", this.tileset, 0, 0);
         //this.groundLayer.setScale(6.0);
         this.detailLayer = this.map.createLayer("Foliage-n-Design", this.tileset, 0, 0);
@@ -44,7 +49,6 @@ class Platformer extends Phaser.Scene {
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
-       
 
         // Find coins in the "Objects" layer in Phaser
         // Look for them by finding objects with the name "coin"
@@ -76,6 +80,8 @@ class Platformer extends Phaser.Scene {
             frame: 248
         });
 
+        this.bullets = [];
+
         // set up player avatar
         my.sprite.player = this.physics.add.sprite(game.config.width/40, game.config.height/12, "Tiles/Transparent/tile_0260b.png").setScale(.66);
         my.sprite.player.setSize(16, 16, true);
@@ -92,7 +98,6 @@ class Platformer extends Phaser.Scene {
         my.sprite.fire.visible = false;
         my.sprite.fire.setScale(0.04);
 
-
         // enemy paths
         this.smallPoints = [
             937.5, game.config.height/40,
@@ -106,7 +111,7 @@ class Platformer extends Phaser.Scene {
         ];
         this.vertCurve = new Phaser.Curves.Spline(this.vertPoints);
 
-        console.log(game.config.height);
+        //console.log(game.config.height);
 
         this.vert2Points = [
             1417.5, 26,
@@ -123,11 +128,11 @@ class Platformer extends Phaser.Scene {
         let enemy1 = this.add.follower(this.smallCurve, 937.5, game.config.height/40, "enemyFrame1");
         my.sprite.enemies.push({"sprite":enemy1, "coolDown":25, "shotDir":"down"});
         let enemy2 = this.add.follower(this.vertCurve, 905.5, game.config.height/6.6, "enemyFrame1");
-        my.sprite.enemies.push({"sprite":enemy2, "coolDown":25, "shotDir":"right"});
+        my.sprite.enemies.push({"sprite":enemy2, "coolDown":35, "shotDir":"right"});
         let enemy3 = this.add.follower(this.vert2Curve, 1417.5, 26, "enemyFrame1").setScale(0.75);
         my.sprite.enemies.push({"sprite":enemy3, "coolDown":40, "shotDir":"right"});
         let enemy4 = this.add.follower(this.vert3Curve, 1558, 74, "enemyFrame1").setScale(0.75);
-        my.sprite.enemies.push({"sprite":enemy4, "coolDown":40, "shotDir":"left"});
+        my.sprite.enemies.push({"sprite":enemy4, "coolDown":40, "shotDir":"left"}); 
 
 
         for (let e of my.sprite.enemies) {
@@ -149,6 +154,7 @@ class Platformer extends Phaser.Scene {
 
         this.physics.world.enable(this.checkpoint, Phaser.Physics.Arcade.STATIC_BODY);
 
+        //this.physics.world.enable(this.bullets, Phaser.Physics.Arcade.STATIC_BODY);
         
         my.vfx.walking = this.add.particles(5, 5, "kenny-particles", {
             frame: ['star_05.png', 'star_01.png'],
@@ -201,11 +207,13 @@ class Platformer extends Phaser.Scene {
 
         this.checkGroup = this.add.group(this.checkpoint);
 
+        this.bulletGroup =  this.add.group(this.bullets);
+
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
 
         // debug key listener (assigned to D key)
-        this.input.keyboard.on('keydown-D', () => {
+        this.input.keyboard.on('keydown-N', () => {
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
             console.log(my.sprite.player.x);
@@ -218,7 +226,7 @@ class Platformer extends Phaser.Scene {
         this.cameras.main.setDeadzone(0, 100);
         this.cameras.main.setZoom(this.SCALE);
 
-        console.log(this.cameras.main);
+        //console.log(this.cameras.main);
 
         // Handle collision detection with coins
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
@@ -243,6 +251,27 @@ class Platformer extends Phaser.Scene {
             this.dead = true;
         });
 
+        this.physics.add.overlap(my.sprite.player, this.bulletGroup, (s1, s2) => {
+            if(!this.dead) {
+                console.log(s2);
+                s2.y = -100;
+                console.log("wrong collide");
+                s2.destroy();
+                s2.visible = false;
+                this.bulletGroup.children.entries.splice(this.bulletGroup.children.entries.indexOf(s2), 1);
+                this.bulletVals.splice(this.bulletGroup.children.entries.indexOf(s2), 1);
+                this.dead = true;
+            }
+            //console.log(this.bulletGroup);
+        });
+        
+        //console.log(this.groundLayer);
+        this.physics.add.collider(this.bulletGroup, this.groundLayer, (s1, s2) => {
+            s1.y = -100;
+            this.bulletGroup.remove(s1, false, true);
+            this.bulletVals.splice(this.bulletGroup.children.entries.indexOf(s1), 1);
+        });
+
         this.physics.add.overlap(my.sprite.player, this.checkGroup, (s1, s2) => {
             if(this.respawn[1] != s2.y - 3) {
                 my.sprite.fire.anims.play("fire");
@@ -256,12 +285,16 @@ class Platformer extends Phaser.Scene {
     }
 
     collides(a, b) {
-        if (Math.abs(a.x - b.x) > (a.displayWidth/2 + b.displayWidth/2)) return false;
-        if (Math.abs(a.y - b.y) > (a.displayHeight/2 + b.displayHeight/2)) return false;
+        if (Math.abs(a.x - b.x) > (a.displayWidth/2 + b.displayWidth/10)) return false;
+        if (Math.abs(a.y - b.y) > (a.displayHeight/2 + b.displayHeight/10)) return false;
         return true;
     }
 
     update() {
+        
+        //console.log(this.bulletGroup)
+
+        //console.log(this.bulletGroup.children.entries[0]);
 
         this.enemyBulletCooldownCounter += 0.5;
         if (this.enemyBulletCooldownCounter > 12) {
@@ -274,7 +307,6 @@ class Platformer extends Phaser.Scene {
         }
 
         for(let c of this.coins) {
-
             if(c.active == true) {
                 c.anims.play('coin', true);
             }
@@ -282,48 +314,60 @@ class Platformer extends Phaser.Scene {
 
         for (let i = 0; i < my.sprite.enemies.length; i++) {
             let enemy = my.sprite.enemies[i];
+            //console.log(enemy);
             //console.log(enemy.texture.key);
             if(this.enemyBulletCooldownCounter % enemy.coolDown == 0) {
-                my.sprite.enemyBullet.push({"sprite":this.add.sprite(enemy.sprite.x, enemy.sprite.y, "enemyShot").setScale(0.03),"dir":enemy.shotDir, "life":0});
-                my.sprite.enemyBullet[my.sprite.enemyBullet.length-1].sprite.anims.play("shot");
+                let tempShot = this.physics.add.sprite(enemy.sprite.x, enemy.sprite.y, "enemyShot").setScale(0.03);
+                tempShot.body.setAllowGravity(false);
+                tempShot.setCircle(64, 230, 230);
+                tempShot.setCollideWorldBounds(true);
+                //console.log(tempShot);
+                if (enemy.shotDir == "right") {
+                    tempShot.body.setVelocityX(70);
+                }
+                else if (enemy.shotDir == "left") {
+                    tempShot.body.setVelocityX(-70);
+                }
+                else if (enemy.shotDir == "down") {
+                    console.log("setting velocity");
+                    tempShot.body.setVelocityY(70);
+                }
+
+                //my.sprite.enemyBullet.push({"sprite":tempShot,"dir":enemy.shotDir, "life":0});
+                this.bulletGroup.add(tempShot);
+                this.bulletVals.push({"life":0});
+                //this.bulletGroup.children.entries[this.bulletGroup.children.entries.length-1].anims.play("shot");
             }
         }
 
-        for(let i = 0; i < my.sprite.enemyBullet.length; i++) {
-            let bullet = my.sprite.enemyBullet[i];
-            if (bullet.life == 55) {
+        for(let i = 0; i < this.bulletGroup.getLength(); i++) {
+            let bullet = this.bulletGroup.children.entries[i];
+            let vals = this.bulletVals[i];
+            //console.log(bullet.body.blocked.none);
+            //console.log(this.physics);
+            /*if (vals.life > 70) {
+                bullet.destroy();
+                bullet.visible = false;
+                bullet.y = -300;
+                //my.sprite.enemyBullet.splice(i, 1);
+                this.bulletGroup.children.entries.splice(i, 1);
+                this.bulletVals.splice(i, 1);
+                i--;
+            }*/
+
+            //if (this.collides(my.sprite.player, bullet.sprite)) {
+                /*bullet.y = -100;
                 bullet.sprite.destroy();
                 bullet.sprite.visible = false;
                 bullet.sprite.y = -100;
                 my.sprite.enemyBullet.splice(i, 1);
                 i--;
-            }
+                this.dead = true; */
+                //break;
+            //}
 
-            if (this.collides(my.sprite.player, bullet.sprite)) {
-                bullet.y = -100;
-                bullet.sprite.destroy();
-                bullet.sprite.visible = false;
-                bullet.sprite.y = -100;
-                my.sprite.enemyBullet.splice(i, 1);
-                i--;
-                this.dead = true;
-                break;
-            }
-
-            else if (bullet.dir == "right") {
-                bullet.sprite.x += 1;
-            }
-
-            else if (bullet.dir == "left") {
-                bullet.sprite.x -= 1;
-            }
-            
-            else if (bullet.dir == "down") {
-                bullet.sprite.y += 1;
-            }
-
-            bullet.sprite.angle += 2;
-            bullet.life += 1;
+            bullet.angle += 2;
+            vals.life += 1;
         }
 
         for (let i = 0; i < my.sprite.enemies.length; i++) {

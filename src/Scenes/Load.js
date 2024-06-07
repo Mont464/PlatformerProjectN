@@ -1,6 +1,7 @@
 class Load extends Phaser.Scene {
     constructor() {
         super("loadScene");
+        this.u;
     }
 
     preload() {
@@ -23,6 +24,7 @@ class Load extends Phaser.Scene {
         this.load.image("enemyFrame2", "Tiles/Transparent/tile_0384.png");
         this.load.image("enemyFrame3", "Tiles/Transparent/tile_0385.png");
 
+        this.load.image("enemyShot", "PNG (Transparent)/star_08.png");
         this.load.image("enemyShot1", "PNG (Transparent)/star_05.png");
         this.load.image("enemyShot2", "PNG (Transparent)/star_06.png");
         this.load.image("enemyShot3", "PNG (Transparent)/star_04.png");
@@ -57,7 +59,7 @@ class Load extends Phaser.Scene {
         this.load.audio("coinSfx", "Audio/clothBelt2.ogg");
         this.load.audio("checkSfx", "Audio/powerUp5.ogg");
 
-        this.load.multiatlas("kenny-particles", "kenny-particles.json");
+        this.u = this.load.multiatlas("kenny-particles", "kenny-particles.json");
     }
 
     create() {
@@ -88,6 +90,21 @@ class Load extends Phaser.Scene {
             frames: [
                 { key: "PlayerJump", duration: -1 }
             ],
+        });
+
+        console.log();
+
+        this.anims.create({
+            key: 'death',
+            frames: this.anims.generateFrameNames('kenny-particles', {
+                prefix: "star_",
+                start: 1,
+                end: 3,
+                suffix: ".png",
+                zeroPad: 2
+            }),
+            frameRate: 10,
+            repeat: -1
         });
 
         this.anims.create({
