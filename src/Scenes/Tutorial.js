@@ -83,9 +83,9 @@ class Tutorial extends Phaser.Scene {
         my.sprite.fire.visible = false;
         my.sprite.fire.setScale(0.04);
 
-        my.text.controls = this.add.text(game.config.width/100, game.config.height-850, "Up Arrow: Jump", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
-        my.text.controls = this.add.text(game.config.width/100, game.config.height-840, "Left Arrow: Left", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
-        my.text.controls = this.add.text(game.config.width/100, game.config.height-830, "Right Arrow: Right", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
+        my.text.controls = this.add.text(game.config.width/100, game.config.height-850, "SPACE: Jump", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
+        my.text.controls = this.add.text(game.config.width/100, game.config.height-840, "Left Arrow/A KEY: Left", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
+        my.text.controls = this.add.text(game.config.width/100, game.config.height-830, "Right Arrow/D KEY: Right", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
         my.text.teach = this.add.text(game.config.width/14, game.config.height-795, "Avoid spikes", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
         my.text.teach = this.add.text(game.config.width/7, game.config.height-787, "Checkpoint", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
         my.text.teach = this.add.text(game.config.width/7, game.config.height-825, "Coin: Collect 2 to open Exit", {fontFamily: "'Jersey 15'", fontSize: 50, color: "#fff"}).setScale(0.15);
@@ -194,7 +194,7 @@ class Tutorial extends Phaser.Scene {
         });
 
         this.physics.add.overlap(my.sprite.player, this.checkGroup, (s1, s2) => {
-            if(this.respawn[1] != s2.y - 3) {
+            if(this.respawn[1] != s2.y - 3 || this.respawn[0] != s2.x) {
                 my.sprite.fire.anims.play("fire");
                 my.sprite.fire.visible = true;
                 my.sprite.fire.x = s2.x;

@@ -14,8 +14,8 @@ class startScene extends Phaser.Scene {
         this.iKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
         my.text.title = this.add.text(720, 200, "NOCTRIA", {fontFamily: "'Jersey 15'", fontSize: 72, color: "#fff"}).setOrigin(0.5);
         my.text.title.setScale(2);
-        my.text.level1 = this.add.text(720, 500, "P: Level 1 - LOST", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
-        my.text.tutorial = this.add.text(720, 400, "I: Tutorial", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
+        my.text.level1 = this.add.text(720, 500, "Press P: Level 1 - LOST", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
+        my.text.tutorial = this.add.text(720, 400, "Press I: Tutorial", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
     }
 
     update() {
