@@ -11,7 +11,9 @@ class Platformer extends Phaser.Scene {
         this.physics.world.gravity.y = 800;
         this.JUMP_VELOCITY = -250;
         this.PARTICLE_VELOCITY = 50;
-        this.JUMP_DRAG = 70
+        this.JUMP_DRAG = 70;
+        this.jumpsDone = 0;
+        this.maxJumps = 1;
         this.SCALE = 5.65;
         this.coinCollect = 0;
         this.respawn = [game.config.width/40, game.config.height/12];
@@ -24,7 +26,8 @@ class Platformer extends Phaser.Scene {
         this.enemyBulletCooldownCounter = 0;
         this.bulletGroup;
         this.bulletVals = [];
-
+        this.aimDir = "right";
+        this.attackCooldown = 0;
         this.groundLayer;
     }
 
@@ -83,7 +86,7 @@ class Platformer extends Phaser.Scene {
         this.bullets = [];
 
         // set up player avatar
-        my.sprite.player = this.physics.add.sprite(game.config.width/40, game.config.height/12, "Tiles/Transparent/tile_0260b.png").setScale(.66);
+        my.sprite.player = this.physics.add.sprite(game.config.width/40, game.config.height/12, "Tiles/Transparent/tile_0260b.png").setScale(0.66);
         my.sprite.player.setSize(16, 16, true);
         my.sprite.player.setOffset(0, 0);
         my.sprite.player.setCollideWorldBounds(true);
@@ -92,6 +95,14 @@ class Platformer extends Phaser.Scene {
         for (let i = 0; i < 3; i++) {
             this.playerLives.push(this.add.sprite(10 + (20 * i), 10, "lives"));
         }
+
+        my.sprite.slash = this.physics.add.sprite(my.sprite.player.x + 6, my.sprite.player.y, "slash1").setScale(0.05);
+        my.sprite.slash.angle += 20;
+        //console.log(my.sprite.slash.angle);
+        my.sprite.slash.body.setAllowGravity(false);
+        my.sprite.slash.setCircle(200, 50, 50);
+        my.sprite.slash.visible = false;
+
 
         // animated checkpoint fire sprite
         my.sprite.fire = this.add.sprite(game.config.width, game.config.height/12, "fire1");
@@ -219,6 +230,14 @@ class Platformer extends Phaser.Scene {
         this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
+        this.mouseDown = this.input.on('pointerdown', (pointer) => {
+            if (this.attackCooldown == 0) {
+                my.sprite.slash.visible = true;
+                my.sprite.slash.anims.play("slash", false);
+                this.attackCooldown = 25;
+            }
+        });
+
         // debug key listener (assigned to D key)
         this.input.keyboard.on('keydown-N', () => {
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
@@ -262,7 +281,6 @@ class Platformer extends Phaser.Scene {
             if(!this.dead) {
                 console.log(s2);
                 s2.y = -100;
-                console.log("wrong collide");
                 s2.destroy();
                 s2.visible = false;
                 this.bulletGroup.children.entries.splice(this.bulletGroup.children.entries.indexOf(s2), 1);
@@ -277,6 +295,14 @@ class Platformer extends Phaser.Scene {
             s1.y = -100;
             this.bulletGroup.remove(s1, false, true);
             this.bulletVals.splice(this.bulletGroup.children.entries.indexOf(s1), 1);
+        });
+
+        this.physics.add.overlap(this.bulletGroup, my.sprite.slash, (s1, s2) => {
+            if (my.sprite.slash.visible) {
+                s1.y = -100;
+                this.bulletGroup.remove(s1, false, true);
+                this.bulletVals.splice(this.bulletGroup.children.entries.indexOf(s1), 1);
+            }
         });
 
         this.physics.add.overlap(my.sprite.player, this.checkGroup, (s1, s2) => {
@@ -308,6 +334,10 @@ class Platformer extends Phaser.Scene {
             this.enemyBulletCooldownCounter == 1
         }
 
+        if (this.attackCooldown > 0) {
+            this.attackCooldown--;
+        }
+
         this.walkCtr++;
         if (this.walkCtr >= 30) {
             this.walkCtr = 0;
@@ -336,7 +366,7 @@ class Platformer extends Phaser.Scene {
                     tempShot.body.setVelocityX(-70);
                 }
                 else if (enemy.shotDir == "down") {
-                    console.log("setting velocity");
+                    //console.log("setting velocity");
                     tempShot.body.setVelocityY(70);
                 }
 
@@ -350,28 +380,6 @@ class Platformer extends Phaser.Scene {
         for(let i = 0; i < this.bulletGroup.getLength(); i++) {
             let bullet = this.bulletGroup.children.entries[i];
             let vals = this.bulletVals[i];
-            //console.log(bullet.body.blocked.none);
-            //console.log(this.physics);
-            /*if (vals.life > 70) {
-                bullet.destroy();
-                bullet.visible = false;
-                bullet.y = -300;
-                //my.sprite.enemyBullet.splice(i, 1);
-                this.bulletGroup.children.entries.splice(i, 1);
-                this.bulletVals.splice(i, 1);
-                i--;
-            }*/
-
-            //if (this.collides(my.sprite.player, bullet.sprite)) {
-                /*bullet.y = -100;
-                bullet.sprite.destroy();
-                bullet.sprite.visible = false;
-                bullet.sprite.y = -100;
-                my.sprite.enemyBullet.splice(i, 1);
-                i--;
-                this.dead = true; */
-                //break;
-            //}
 
             bullet.angle += 2;
             vals.life += 1;
@@ -417,6 +425,7 @@ class Platformer extends Phaser.Scene {
                 my.sprite.player.setFlip(true, false);
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+                this.aimDir = "left";
 
                 if(my.sprite.player.body.blocked.down && this.walkCtr % 15 == 0) {
                     this.sound.play("walkSfx");
@@ -439,6 +448,7 @@ class Platformer extends Phaser.Scene {
                 my.sprite.player.resetFlip();
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+                this.aimDir = "right";
 
                 if(my.sprite.player.body.blocked.down && this.walkCtr % 15 == 0) {
                     this.sound.play("walkSfx");
@@ -454,6 +464,10 @@ class Platformer extends Phaser.Scene {
                     my.vfx.walking.stop();
                 }
 
+            } else if(cursors.up.isDown || this.wKey.isDown) {
+                this.aimDir = "up";
+            } else if(cursors.down.isDown || this.sKey.isDown) {
+                this.aimDir = "down";
             } else {
                 // TODO: set acceleration to 0 and have DRAG take over
                 my.sprite.player.body.setAccelerationX(0);
@@ -473,15 +487,46 @@ class Platformer extends Phaser.Scene {
                 my.sprite.player.anims.play('jump');
                 my.sprite.player.body.setDragY(this.JUMP_DRAG);
             }
+            else {
+                this.jumpsDone = 0;
+            }
             if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
                 // TODO: set a Y velocity to have the player "jump" upwards (negative Y direction)
-                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
-                my.vfx.jumping.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+                if (this.jumpsDone < this.maxJumps) {
+                    my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+                    my.vfx.jumping.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
 
-                this.sound.play("jumpSfx");
+                    this.sound.play("jumpSfx");
 
-                my.vfx.jumping.setParticleSpeed(-this.PARTICLE_VELOCITY, 0);
-                my.vfx.jumping.start();
+                    my.vfx.jumping.setParticleSpeed(-this.PARTICLE_VELOCITY, 0);
+                    my.vfx.jumping.start();
+                }
+            }
+
+            if (this.aimDir == "right") {
+                my.sprite.slash.x = my.sprite.player.x + 8;
+                my.sprite.slash.y = my.sprite.player.y;
+                my.sprite.slash.angle = 0;
+                //console.log("right: " + my.sprite.slash.x);
+            } else if (this.aimDir == "left") {
+                my.sprite.slash.x = my.sprite.player.x - 8;
+                my.sprite.slash.y = my.sprite.player.y;
+                my.sprite.slash.angle = 210;
+                //console.log("left: " + my.sprite.slash.x);
+            } else if (this.aimDir == "up") {
+                my.sprite.slash.x = my.sprite.player.x;
+                my.sprite.slash.y = my.sprite.player.y - 8;
+                my.sprite.slash.angle = -65;
+                //console.log("up: " + my.sprite.slash.angle);
+            } else if (this.aimDir == "down" && !my.sprite.player.body.blocked.down) {
+                my.sprite.slash.x = my.sprite.player.x;
+                my.sprite.slash.y = my.sprite.player.y + 8;
+                my.sprite.slash.angle = 110;
+                //console.log("down: " + my.sprite.slash.angle);
+            }
+
+            if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+
             }
         }
     }

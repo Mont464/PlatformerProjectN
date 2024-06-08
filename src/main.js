@@ -30,7 +30,7 @@ let config = {
             }
         }
     },
-    fps: { target: 60, forceSetTimeOut: true},
+    fps: { target: 60, forceSetTimeOut: true },
     width: 1440,
     height: 900,
     scene: [Load, Platformer, endScene, startScene, Tutorial, failScene]

@@ -29,6 +29,10 @@ class Load extends Phaser.Scene {
         this.load.image("enemyShot2", "PNG (Transparent)/star_06.png");
         this.load.image("enemyShot3", "PNG (Transparent)/star_04.png");
 
+        this.load.image("slash1", "PNG (Transparent)/twirl_01.png");
+        this.load.image("slash2", "PNG (Transparent)/twirl_02.png");
+        this.load.image("slash3", "PNG (Transparent)/twirl_03.png");
+
         //coin frames
         this.load.image("coin1", "Tiles/Transparent/tile_0020y.png");
         this.load.image("coin2", "Tiles/Transparent/tile_0021y.png");
@@ -159,6 +163,19 @@ class Load extends Phaser.Scene {
             frameRate: 5,
             repeat: -1,
             yoyo: true
+        });
+
+        this.anims.create({
+            key: 'slash',
+            //defaultTextureKey: "platformer_characters",
+            frames: [
+
+                { key: "slash1"},
+                { key: "slash2"},
+                { key: "slash3", duration: -1}
+            ],
+            frameRate: 15,
+            hideOnComplete: true
         });
 
          // ...and pass to the next Scene
