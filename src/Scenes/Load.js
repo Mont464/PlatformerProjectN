@@ -62,6 +62,9 @@ class Load extends Phaser.Scene {
         this.load.audio("deadSfx", "Audio/forceField_004.ogg");
         this.load.audio("coinSfx", "Audio/clothBelt2.ogg");
         this.load.audio("checkSfx", "Audio/powerUp5.ogg");
+        this.load.audio("chestSfx", "Audio/metalPot2.ogg");
+        this.load.audio("slashSfx", "Audio/drawKnife1.ogg");
+        this.load.audio("breakBulletSfx", "Audio/impactMining_001.ogg");
 
         this.u = this.load.multiatlas("kenny-particles", "kenny-particles.json");
     }

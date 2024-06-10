@@ -29,6 +29,7 @@ class Platformer extends Phaser.Scene {
         this.aimDir = "right";
         this.attackCooldown = 0;
         this.groundLayer;
+        this.hasSword = false;
     }
 
     create() {
@@ -81,6 +82,12 @@ class Platformer extends Phaser.Scene {
             name: "torch",
             key: "tilemap_sheet",
             frame: 248
+        });
+
+        this.chest = this.map.createFromObjects("Chest", {
+            name: "chest",
+            key: "tilemap_sheet",
+            frame: 389
         });
 
         this.bullets = [];
@@ -165,6 +172,8 @@ class Platformer extends Phaser.Scene {
 
         this.physics.world.enable(this.checkpoint, Phaser.Physics.Arcade.STATIC_BODY);
 
+        this.physics.world.enable(this.chest, Phaser.Physics.Arcade.STATIC_BODY);
+
         //this.physics.world.enable(this.bullets, Phaser.Physics.Arcade.STATIC_BODY);
         
         my.vfx.walking = this.add.particles(5, 5, "kenny-particles", {
@@ -220,6 +229,8 @@ class Platformer extends Phaser.Scene {
 
         this.bulletGroup =  this.add.group(this.bullets);
 
+        this.chestGroup = this.add.group(this.chest);
+
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
 
@@ -231,10 +242,11 @@ class Platformer extends Phaser.Scene {
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         this.mouseDown = this.input.on('pointerdown', (pointer) => {
-            if (this.attackCooldown == 0) {
+            if (this.attackCooldown == 0 && this.hasSword == true) {
                 my.sprite.slash.visible = true;
                 my.sprite.slash.anims.play("slash", false);
                 this.attackCooldown = 25;
+                this.sound.play("slashSfx");
             }
         });
 
@@ -244,7 +256,6 @@ class Platformer extends Phaser.Scene {
             this.physics.world.debugGraphic.clear()
             console.log(my.sprite.player.x);
             console.log(my.sprite.player.y);
-            console.log(this.cameras.main.worldView.x);
         }, this);
 
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
@@ -270,6 +281,16 @@ class Platformer extends Phaser.Scene {
             if(s2.frame.name == 58) {
                 this.sound.play("exitSfx");
                 this.scene.start("endScene");
+            }
+        });
+
+        this.physics.add.overlap(my.sprite.player, this.chestGroup, (s1, s2) => {
+            if(s2.frame.name == 389) {
+                this.sound.play("chestSfx");
+                this.chestGroup.children.entries[0].setFrame(390);
+                this.hasSword = true;
+                my.text.teach = this.add.text(1816, 50, "SWORD AQUIRED", {fontFamily: "'Jersey 15'", fontSize: 150, color: "#fff"}).setOrigin(0.5).setScale(0.1);
+                my.text.teachSword = this.add.text(1816, 70, "Press Mouse1 to Attack", {fontFamily: "'Jersey 15'", fontSize: 100, color: "#fff"}).setOrigin(0.5).setScale(0.1);
             }
         });
 
@@ -302,6 +323,7 @@ class Platformer extends Phaser.Scene {
                 s1.y = -100;
                 this.bulletGroup.remove(s1, false, true);
                 this.bulletVals.splice(this.bulletGroup.children.entries.indexOf(s1), 1);
+                this.sound.play("breakBulletSfx");
             }
         });
 
@@ -523,10 +545,6 @@ class Platformer extends Phaser.Scene {
                 my.sprite.slash.y = my.sprite.player.y + 8;
                 my.sprite.slash.angle = 110;
                 //console.log("down: " + my.sprite.slash.angle);
-            }
-
-            if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-
             }
         }
     }

@@ -46,6 +46,29 @@
         }, 
         {
          "draworder":"topdown",
+         "id":11,
+         "name":"Chest",
+         "objects":[
+                {
+                 "gid":390,
+                 "height":16,
+                 "id":58,
+                 "name":"chest",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":1808.25,
+                 "y":96.5
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
          "id":10,
          "name":"Checkpoints",
          "objects":[
@@ -134,14 +157,14 @@
                 {
                  "gid":57,
                  "height":16,
-                 "id":8,
+                 "id":59,
                  "name":"door",
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":1822.95,
-                 "y":96.0352
+                 "x":1856.5,
+                 "y":96
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -565,8 +588,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":11,
- "nextobjectid":58,
+ "nextlayerid":12,
+ "nextobjectid":61,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",
@@ -575,7 +598,7 @@
         {
          "columns":20,
          "firstgid":1,
-         "image":"Tilemap\/monochrome_tilemap_packed.png",
+         "image":"..\/..\/..\/PlatformerProject\/assets\/Tilemap\/monochrome_tilemap_packed.png",
          "imageheight":320,
          "imagewidth":320,
          "margin":0,
