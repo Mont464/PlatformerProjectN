@@ -8,11 +8,11 @@ class Load extends Phaser.Scene {
         this.load.setPath("./assets/");
 
         // Load character frames
-        this.load.image("PlayerStill", "Tiles/Transparent/tile_0260b.png");
-        this.load.image("PlayerFrame1", "Tiles/Transparent/tile_0261b.png");
-        this.load.image("PlayerFrame2", "Tiles/Transparent/tile_0262b.png");
-        this.load.image("PlayerFrame3", "Tiles/Transparent/tile_0263b.png");
-        this.load.image("PlayerJump", "Tiles/Transparent/tile_0264b.png");
+        this.load.image("PlayerStill", "Tiles/Transparent/tile_0260p.png");
+        this.load.image("PlayerFrame1", "Tiles/Transparent/tile_0261p.png");
+        this.load.image("PlayerFrame2", "Tiles/Transparent/tile_0262p.png");
+        this.load.image("PlayerFrame3", "Tiles/Transparent/tile_0263p.png");
+        this.load.image("PlayerJump", "Tiles/Transparent/tile_0264p.png");
 
         this.load.image("exit", "Tiles/Transparent/tile_0056.png");
         this.load.image("exitOpen", "Tiles/Transparent/tile_0058.png");
@@ -29,9 +29,9 @@ class Load extends Phaser.Scene {
         this.load.image("enemyShot2", "PNG (Transparent)/star_06.png");
         this.load.image("enemyShot3", "PNG (Transparent)/star_04.png");
 
-        this.load.image("slash1", "PNG (Transparent)/twirl_01.png");
-        this.load.image("slash2", "PNG (Transparent)/twirl_02.png");
-        this.load.image("slash3", "PNG (Transparent)/twirl_03.png");
+        this.load.image("slash1", "PNG (Transparent)/twirl_01p.png");
+        this.load.image("slash2", "PNG (Transparent)/twirl_02p.png");
+        this.load.image("slash3", "PNG (Transparent)/twirl_03p.png");
 
         //coin frames
         this.load.image("coin1", "Tiles/Transparent/tile_0020y.png");
@@ -65,6 +65,9 @@ class Load extends Phaser.Scene {
         this.load.audio("chestSfx", "Audio/metalPot2.ogg");
         this.load.audio("slashSfx", "Audio/drawKnife1.ogg");
         this.load.audio("breakBulletSfx", "Audio/impactMining_001.ogg");
+        this.load.audio("titleMusic", "Audio/titleSong.mp3");
+        this.load.audio("tutorialMusic", "Audio/Bleeping Demo.mp3");
+        this.load.audio("lev1Music", "Audio/Floating Cities.mp3");
 
         this.u = this.load.multiatlas("kenny-particles", "kenny-particles.json");
     }

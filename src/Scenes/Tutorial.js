@@ -18,9 +18,13 @@ class Tutorial extends Phaser.Scene {
         this.dead = false;
         this.walkCtr = 0;
         this.tempCheck = [];
+        this.tutorialSong;
     }
 
     create() {
+        this.tutorialSong = this.sound.add("tutorialMusic");
+        this.tutorialSong.play({"loop" : true});
+        
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 45 tiles wide and 25 tiles tall.
         this.map = this.add.tilemap("platformer-level-0", 16, 16, 80, 10);
@@ -184,6 +188,7 @@ class Tutorial extends Phaser.Scene {
 
         this.physics.add.overlap(my.sprite.player, this.doorGroup, (s1, s2) => {
             if(s2.frame.name == 58) {
+                this.tutorialSong.stop();
                 this.sound.play("exitSfx");
                 this.scene.start("endScene");
             }

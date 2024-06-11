@@ -30,9 +30,13 @@ class Platformer extends Phaser.Scene {
         this.attackCooldown = 0;
         this.groundLayer;
         this.hasSword = false;
+        this.levelSong;
     }
 
     create() {
+        this.levelSong = this.sound.add("lev1Music");
+        this.levelSong.play({"loop" : true});
+
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 45 tiles wide and 25 tiles tall.
         this.map = this.add.tilemap("platformer-level-1", 16, 16, 80, 10);
@@ -104,7 +108,7 @@ class Platformer extends Phaser.Scene {
         }
 
         my.sprite.slash = this.physics.add.sprite(my.sprite.player.x + 6, my.sprite.player.y, "slash1").setScale(0.05);
-        my.sprite.slash.angle += 20;
+        //my.sprite.slash.angle += 20;
         //console.log(my.sprite.slash.angle);
         my.sprite.slash.body.setAllowGravity(false);
         my.sprite.slash.setCircle(200, 50, 50);
@@ -279,6 +283,7 @@ class Platformer extends Phaser.Scene {
 
         this.physics.add.overlap(my.sprite.player, this.doorGroup, (s1, s2) => {
             if(s2.frame.name == 58) {
+                this.levelSong.stop();
                 this.sound.play("exitSfx");
                 this.scene.start("endScene");
             }
@@ -428,6 +433,7 @@ class Platformer extends Phaser.Scene {
             this.playerLives[this.playerLives.length - 1].destroy();
             this.playerLives.splice(this.playerLives.length - 1, 1);
             if (this.playerLives.length == 0) {
+                this.levelSong.stop();
                 this.scene.start("failScene");
             }
             setTimeout(() => { 
@@ -528,22 +534,22 @@ class Platformer extends Phaser.Scene {
             if (this.aimDir == "right") {
                 my.sprite.slash.x = my.sprite.player.x + 8;
                 my.sprite.slash.y = my.sprite.player.y;
-                my.sprite.slash.angle = 0;
+                my.sprite.slash.angle = -30;
                 //console.log("right: " + my.sprite.slash.x);
             } else if (this.aimDir == "left") {
                 my.sprite.slash.x = my.sprite.player.x - 8;
                 my.sprite.slash.y = my.sprite.player.y;
-                my.sprite.slash.angle = 210;
+                my.sprite.slash.angle = 160;
                 //console.log("left: " + my.sprite.slash.x);
             } else if (this.aimDir == "up") {
                 my.sprite.slash.x = my.sprite.player.x;
                 my.sprite.slash.y = my.sprite.player.y - 8;
-                my.sprite.slash.angle = -65;
+                my.sprite.slash.angle = -110;
                 //console.log("up: " + my.sprite.slash.angle);
             } else if (this.aimDir == "down" && !my.sprite.player.body.blocked.down) {
                 my.sprite.slash.x = my.sprite.player.x;
                 my.sprite.slash.y = my.sprite.player.y + 8;
-                my.sprite.slash.angle = 110;
+                my.sprite.slash.angle = 70;
                 //console.log("down: " + my.sprite.slash.angle);
             }
         }
