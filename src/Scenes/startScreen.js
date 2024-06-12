@@ -10,26 +10,33 @@ class startScene extends Phaser.Scene {
     }
 
     create() {
-          // update instruction text
-        this.pKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
-        this.iKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
+        //input keys
+        this.zeroKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ZERO);
+        this.oneKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
+        this.twoKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
         this.titleSong = this.sound.add("titleMusic");
         this.titleSong.play({"loop" : true});
         my.text.title = this.add.text(720, 200, "NOCTRIA", {fontFamily: "'Jersey 15'", fontSize: 72, color: "#fff"}).setOrigin(0.5);
         my.text.title.setScale(2);
-        my.text.level1 = this.add.text(720, 500, "Press P: Level 1 - LOST", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
-        my.text.tutorial = this.add.text(720, 400, "Press I: Tutorial", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
+        my.text.level1 = this.add.text(720, 500, "Press 1: Level 1 - LOST", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
+        my.text.tutorial = this.add.text(720, 400, "Press 0: Tutorial", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
+        my.text.level2 = this.add.text(720, 600, "Press 2: Level 2 - CHAINS", {fontFamily: "'Jersey 15'", fontSize: 64, color: "#fff"}).setOrigin(0.5);
     }
 
     update() {
-        if (this.pKey.isDown) {
+        if (this.oneKey.isDown) {
             this.titleSong.stop();
             this.scene.start("platformerScene");
         }
 
-        if (this.iKey.isDown) {
+        if (this.zeroKey.isDown) {
             this.titleSong.stop();
             this.scene.start("tutorialScene");
+        }
+
+        if (this.twoKey.isDown) {
+            this.titleSong.stop();
+            this.scene.start("platformer2Scene");
         }
     }
 

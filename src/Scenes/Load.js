@@ -14,9 +14,11 @@ class Load extends Phaser.Scene {
         this.load.image("PlayerFrame3", "Tiles/Transparent/tile_0263p.png");
         this.load.image("PlayerJump", "Tiles/Transparent/tile_0264p.png");
 
+        //load exit frames
         this.load.image("exit", "Tiles/Transparent/tile_0056.png");
         this.load.image("exitOpen", "Tiles/Transparent/tile_0058.png");
 
+        //load lives sprite
         this.load.image("lives", "Tiles/Transparent/tile_0042.png");
 
         //enemy frames
@@ -24,11 +26,13 @@ class Load extends Phaser.Scene {
         this.load.image("enemyFrame2", "Tiles/Transparent/tile_0384.png");
         this.load.image("enemyFrame3", "Tiles/Transparent/tile_0385.png");
 
+        //enemy bullet frames
         this.load.image("enemyShot", "PNG (Transparent)/star_08.png");
         this.load.image("enemyShot1", "PNG (Transparent)/star_05.png");
         this.load.image("enemyShot2", "PNG (Transparent)/star_06.png");
         this.load.image("enemyShot3", "PNG (Transparent)/star_04.png");
 
+        //player attack frames
         this.load.image("slash1", "PNG (Transparent)/twirl_01p.png");
         this.load.image("slash2", "PNG (Transparent)/twirl_02p.png");
         this.load.image("slash3", "PNG (Transparent)/twirl_03p.png");
@@ -48,6 +52,7 @@ class Load extends Phaser.Scene {
         this.load.image("tilemap_tiles", "Tilemap/monochrome_tilemap_packed.png");      // Packed tilemap
         this.load.tilemapTiledJSON("platformer-level-1", "PlatformerLand.tmj");         // Tilemap in JSON
         this.load.tilemapTiledJSON("platformer-level-0", "Tutorial.tmj");
+        this.load.tilemapTiledJSON("platformer-level-2", "level2.tmj"); 
         
         // Load the transparent tilemap as a spritesheet
         this.load.spritesheet("tilemap_sheet", "Tilemap/monochrome_tilemap_transparent_packed.png", {
@@ -69,10 +74,12 @@ class Load extends Phaser.Scene {
         this.load.audio("tutorialMusic", "Audio/Bleeping Demo.mp3");
         this.load.audio("lev1Music", "Audio/Floating Cities.mp3");
 
+        //particle multiatlas
         this.u = this.load.multiatlas("kenny-particles", "kenny-particles.json");
     }
 
     create() {
+        //walk animation
         this.anims.create({
             key: 'walk',
             //defaultTextureKey: "platformer_characters",
@@ -85,6 +92,7 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        //idle animation
         this.anims.create({
             key: 'idle',
             //defaultTextureKey: "platformer_characters",
@@ -94,6 +102,7 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        //jump animation
         this.anims.create({
             key: 'jump',
             //defaultTextureKey: "platformer_characters",
@@ -102,8 +111,7 @@ class Load extends Phaser.Scene {
             ],
         });
 
-        console.log();
-
+        //death animation
         this.anims.create({
             key: 'death',
             frames: this.anims.generateFrameNames('kenny-particles', {
@@ -117,6 +125,7 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        //coin animation
         this.anims.create({
             key: 'coin',
             //defaultTextureKey: "platformer_characters",
@@ -131,6 +140,7 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        //active checkpoint animation
         this.anims.create({
             key: 'fire',
             //defaultTextureKey: "platformer_characters",
@@ -145,6 +155,7 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        //enemy animation
         this.anims.create({
             key: 'enemy',
             //defaultTextureKey: "platformer_characters",
@@ -157,6 +168,7 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        //enemy bullet animation
         this.anims.create({
             key: 'shot',
             //defaultTextureKey: "platformer_characters",
@@ -171,6 +183,7 @@ class Load extends Phaser.Scene {
             yoyo: true
         });
 
+        //player attack animation
         this.anims.create({
             key: 'slash',
             //defaultTextureKey: "platformer_characters",
@@ -184,7 +197,7 @@ class Load extends Phaser.Scene {
             hideOnComplete: true
         });
 
-         // ...and pass to the next Scene
+         //after load go to start screen
          this.scene.start("startScene");
     }
 
