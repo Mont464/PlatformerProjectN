@@ -21,7 +21,6 @@ class Platformer2 extends Phaser.Scene {
         this.walkCtr = 0;
         this.tempCheck = [];
         my.sprite.enemies = [];
-        this.playerLives = [];
         my.sprite.enemyBullet = [];
         this.enemyBulletCooldownCounter = 0;
         this.bulletGroup;
@@ -32,12 +31,18 @@ class Platformer2 extends Phaser.Scene {
         this.hasSword = true;
         this.levelSong;
         this.hasDash = false;
+        this.dashCooldown = 0;
+        this.lives = this.scene.get("lifeScene");
+        this.dashing = 0;
     }
 
     create() {
         //start playing the level song
-        this.levelSong = this.sound.add("lev1Music");
+        this.levelSong = this.sound.add("lev2Music");
         this.levelSong.play({"loop" : true});
+
+        //store the current level in UI handler
+        this.lives.setOwner(this);
 
         // Create a new tilemap game object
         this.map = this.add.tilemap("platformer-level-2", 16, 16, 80, 10);
@@ -57,7 +62,14 @@ class Platformer2 extends Phaser.Scene {
             collides: true
         });
 
-
+        //change collision for platforms
+        for(let i of this.groundLayer.layer.data) {
+            for(let j of i) {
+                if(j.properties.platform) {
+                    j.collideDown = false;
+                }
+            }
+        }
 
         //for group of coins
         this.coins = this.map.createFromObjects("Objects", {
@@ -110,11 +122,6 @@ class Platformer2 extends Phaser.Scene {
         my.sprite.player.setCollideWorldBounds(true);
         my.sprite.player.body.setMaxVelocityX(this.VELOCITY);
 
-        //add hearts that represent lives in the top left
-        for (let i = 0; i < 3; i++) {
-            this.playerLives.push(this.add.sprite(10 + (20 * i), 10, "lives"));
-        }
-
         //set up attack sprite
         my.sprite.slash = this.physics.add.sprite(my.sprite.player.x + 6, my.sprite.player.y, "slash1").setScale(0.05);
         my.sprite.slash.body.setAllowGravity(false);
@@ -129,14 +136,14 @@ class Platformer2 extends Phaser.Scene {
 
         // enemy paths
         this.smallPoints = [
-            937.5, game.config.height/40,
-            1000, game.config.height/40
+            23, 138,
+            23, 118
         ];
         this.smallCurve = new Phaser.Curves.Spline(this.smallPoints);
 
         this.vertPoints = [
-            905.5, game.config.height/6.6,
-            905.5, game.config.height/8
+            407, 58,
+            407, 23
         ];
         this.vertCurve = new Phaser.Curves.Spline(this.vertPoints);
 
@@ -146,19 +153,19 @@ class Platformer2 extends Phaser.Scene {
         ];
         this.vert2Curve = new Phaser.Curves.Spline(this.vert2Points);
 
-        this.vert3Points = [
-            1558, 74,
-            1558, 26
+        this.horizPoints = [
+            1285, 22,
+            1333, 22
         ];
-        this.vert3Curve = new Phaser.Curves.Spline(this.vert3Points);
+        this.horizCurve = new Phaser.Curves.Spline(this.horizPoints);
 
-        //create sprites and add them to the sprite array                                           FIX ENEMIES*****************
-        let enemy1 = this.add.follower(this.smallCurve, 937.5, game.config.height/40, "enemyFrame1");
-        my.sprite.enemies.push({"sprite":enemy1, "coolDown":25, "shotDir":"down"});
-        let enemy2 = this.add.follower(this.vertCurve, 905.5, game.config.height/6.6, "enemyFrame1");
-        my.sprite.enemies.push({"sprite":enemy2, "coolDown":35, "shotDir":"right"});
-        //let enemy3 = this.add.follower(this.vert2Curve, 1417.5, 26, "enemyFrame1").setScale(0.75);
-        //my.sprite.enemies.push({"sprite":enemy3, "coolDown":40, "shotDir":"right"});
+        //create sprites and add them to the sprite array                                          
+        let enemy1 = this.add.follower(this.smallCurve, 23, 139, "enemyFrame1");
+        my.sprite.enemies.push({"sprite":enemy1, "coolDown":25, "shotDir":"right"});
+        let enemy2 = this.add.follower(this.vertCurve, 407, 58, "enemyFrame1");
+        my.sprite.enemies.push({"sprite":enemy2, "coolDown":35, "shotDir":"left"});
+        let enemy3 = this.add.follower(this.horizCurve, 1285, 22, "enemyFrame1").setScale(0.75);
+        my.sprite.enemies.push({"sprite":enemy3, "coolDown":40, "shotDir":"down"});
         //let enemy4 = this.add.follower(this.vert3Curve, 1558, 74, "enemyFrame1").setScale(0.75);
         //my.sprite.enemies.push({"sprite":enemy4, "coolDown":40, "shotDir":"left"}); 
 
@@ -204,6 +211,16 @@ class Platformer2 extends Phaser.Scene {
             duration: 150 
         });
 
+        my.vfx.dashing = this.add.particles(5, 5, "kenny-particles", {
+            frame: ['scorch_01.png', 'scorch_02.png', 'scorch_03.png'],
+            random: true,
+            scale: {start: 0, end: 0.06, ease: 'elastic.in'},
+            lifespan: 250,
+            gravityY: -100,
+            alpha: {start: 0.1, end: 1},
+            duration: 200 
+        });
+
         my.vfx.death = this.add.particles(-5, -5, "kenny-particles", {
             frame: ['star_01.png', 'star_02.png', 'star_03.png'],
             scale: {start: 0.1, end: 0.3},
@@ -215,6 +232,7 @@ class Platformer2 extends Phaser.Scene {
         my.vfx.walking.stop();
         my.vfx.jumping.stop();
         my.vfx.death.stop();
+        my.vfx.dashing.stop();
 
         // Create a Phaser group out of the physics arrays
         // This will be used for collision detection below.
@@ -284,7 +302,7 @@ class Platformer2 extends Phaser.Scene {
             if(s2.frame.name == 58) {
                 this.levelSong.stop();
                 this.sound.play("exitSfx");
-                this.scene.start("endScene");
+                this.lives.winClear();
             }
         });
 
@@ -294,6 +312,7 @@ class Platformer2 extends Phaser.Scene {
             obj2.visible = false;
             obj2.y = -100
             this.sound.play("coinSfx");
+            my.text.teachJump = this.add.text(997, 135, "DASH (SHIFT)", {fontFamily: "'Jersey 15'", fontSize: 80, color: "#fff"}).setOrigin(0.5).setScale(0.1);
         });
 
         this.physics.add.overlap(my.sprite.player, this.dJumpGroup, (obj1, obj2) => {
@@ -302,6 +321,7 @@ class Platformer2 extends Phaser.Scene {
             obj2.visible = false;
             obj2.y = -100
             this.sound.play("coinSfx");
+            my.text.teachJump = this.add.text(360, 120, "DOUBLE JUMP", {fontFamily: "'Jersey 15'", fontSize: 80, color: "#fff"}).setOrigin(0.5).setScale(0.1);
         });
 
         this.physics.add.overlap(my.sprite.player, this.killGroup, (s1, s2) => {
@@ -310,11 +330,8 @@ class Platformer2 extends Phaser.Scene {
 
         this.physics.add.overlap(my.sprite.player, this.bulletGroup, (s1, s2) => {
             if(!this.dead) {
-                console.log(s2);
                 s2.y = -100;
-                s2.destroy();
-                s2.visible = false;
-                this.bulletGroup.children.entries.splice(this.bulletGroup.children.entries.indexOf(s2), 1);
+                this.bulletGroup.remove(s2, false, true);
                 this.bulletVals.splice(this.bulletGroup.children.entries.indexOf(s2), 1);
                 this.dead = true;
             }
@@ -367,6 +384,16 @@ class Platformer2 extends Phaser.Scene {
             this.attackCooldown--;
         }
 
+        //update dash cooldown
+        if (this.dashCooldown > 0) {
+            this.dashCooldown--;
+        }
+
+        //update dash active duration
+        if (this.dashing >= 0) {
+            this.dashing--;
+        }
+
         //update walk sfx counter
         this.walkCtr++;
         if (this.walkCtr >= 30) {
@@ -378,12 +405,6 @@ class Platformer2 extends Phaser.Scene {
             if(c.active == true) {
                 c.anims.play('coin', true);
             }
-        }
-
-        //handle lives icons moving with camera
-        for (let i = 0; i < this.playerLives.length; i++) {
-            this.playerLives[i].x = this.cameras.main.worldView.x + 10 + (20 * i);
-            this.playerLives[i].y = this.cameras.main.worldView.y + 10;
         }
 
         //check if enemy can shoot and create a bullet if it can
@@ -437,13 +458,7 @@ class Platformer2 extends Phaser.Scene {
             my.sprite.player.body.setVelocityX(0);
             my.sprite.player.anims.play('idle');
             my.vfx.walking.stop();
-            this.playerLives[this.playerLives.length - 1].y = -200;
-            this.playerLives[this.playerLives.length - 1].destroy();
-            this.playerLives.splice(this.playerLives.length - 1, 1);
-            if (this.playerLives.length == 0) {
-                this.levelSong.stop();
-                this.scene.start("failScene");
-            }
+            this.lives.loseLife();
             setTimeout(() => { 
                 my.vfx.death.stop();
                 my.sprite.player.x = this.respawn[0];
@@ -455,10 +470,36 @@ class Platformer2 extends Phaser.Scene {
         
         //handle player input if the player is alive
         else {
+            if(Phaser.Input.Keyboard.JustDown(this.shiftKey)) { //handle dashing before movement
+                if (this.hasDash && this.dashCooldown == 0) {
+                    this.dashCooldown = 50;
+                    this.dashing = 12;
+                    my.vfx.dashing.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-5, my.sprite.player.displayHeight/2-5, false);
+                    my.vfx.dashing.start();
+                    if (this.aimDir == "right") {
+                        my.sprite.player.setVelocityX(300);
+                        my.sprite.player.body.setMaxVelocityX(300);
+                    }
+                    else if (this.aimDir == "left") {
+                        my.sprite.player.setVelocityX(-300);
+                        my.sprite.player.body.setMaxVelocityX(300);
+                    }
+                    else if (this.aimDir == "up") {
+                        my.sprite.player.setVelocityY(-150);
+                    }
+                    else if (this.aimDir == "left") {
+                        my.sprite.player.setVelocityY(100);
+                    }
+                }
+            }
+
+            if (this.dashing == 0) {
+                my.sprite.player.body.setMaxVelocityX(this.VELOCITY);
+                my.vfx.dashing.stop();
+            }
+
             if(cursors.left.isDown || this.aKey.isDown) {                   //handle left move
-                // TODO: have the player accelerate to the left
                 my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
-                //my.sprite.player.body.setVelocityX(-this.VELOCITY);
                 my.sprite.player.setFlip(true, false);
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
@@ -479,9 +520,7 @@ class Platformer2 extends Phaser.Scene {
                 }
 
             } else if(cursors.right.isDown || this.dKey.isDown) {           //handle right move
-                // TODO: have the player accelerate to the right
                 my.sprite.player.body.setAccelerationX(this.ACCELERATION);
-                //my.sprite.player.body.setVelocityX(this.VELOCITY);
                 my.sprite.player.resetFlip();
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
@@ -506,9 +545,7 @@ class Platformer2 extends Phaser.Scene {
             } else if(cursors.down.isDown || this.sKey.isDown) {         //handle aiming down
                 this.aimDir = "down";
             } else {                                                     //handle no input
-                // TODO: set acceleration to 0 and have DRAG take over
                 my.sprite.player.body.setAccelerationX(0);
-                //my.sprite.player.body.setVelocityX(0);
                 my.sprite.player.body.setDragX(this.DRAG);
                 my.sprite.player.anims.play('idle');
                 my.vfx.walking.stop();

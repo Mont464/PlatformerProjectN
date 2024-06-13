@@ -22,7 +22,7 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true,
+            debug: false,
             tileBias: 12,
             gravity: {
                 x: 0,
@@ -33,7 +33,7 @@ let config = {
     fps: { target: 60, forceSetTimeOut: true },
     width: 1440,
     height: 900,
-    scene: [Load, Platformer, endScene, startScene, Tutorial, failScene, Platformer2]
+    scene: [Load, Platformer, endScene, startScene, Tutorial, failScene, Platformer2, lifeScene, creditsScene]
 }
 
 var cursors;

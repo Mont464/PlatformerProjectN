@@ -73,6 +73,9 @@ class Load extends Phaser.Scene {
         this.load.audio("titleMusic", "Audio/titleSong.mp3");
         this.load.audio("tutorialMusic", "Audio/Bleeping Demo.mp3");
         this.load.audio("lev1Music", "Audio/Floating Cities.mp3");
+        this.load.audio("lev2Music", "Audio/Mystic Force.mp3");
+        this.load.audio("creditsMusic", "Audio/A Very Brady Special.mp3");
+
 
         //particle multiatlas
         this.u = this.load.multiatlas("kenny-particles", "kenny-particles.json");

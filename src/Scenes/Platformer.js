@@ -21,7 +21,6 @@ class Platformer extends Phaser.Scene {
         this.walkCtr = 0;
         this.tempCheck = [];
         my.sprite.enemies = [];
-        this.playerLives = [];
         my.sprite.enemyBullet = [];
         this.enemyBulletCooldownCounter = 0;
         this.bulletGroup;
@@ -31,11 +30,16 @@ class Platformer extends Phaser.Scene {
         this.groundLayer;
         this.hasSword = false;
         this.levelSong;
+        this.lives = this.scene.get("lifeScene");
     }
 
     create() {
+        //start looping level song
         this.levelSong = this.sound.add("lev1Music");
         this.levelSong.play({"loop" : true});
+
+        //store the current level in UI handler
+        this.lives.setOwner(this);
 
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 45 tiles wide and 25 tiles tall.
@@ -56,6 +60,14 @@ class Platformer extends Phaser.Scene {
             collides: true
         });
 
+        //change collision for platforms
+        for(let i of this.groundLayer.layer.data) {
+            for(let j of i) {
+                if(j.properties.platform) {
+                    j.collideDown = false;
+                }
+            }
+        }
 
 
         //for group of coins
@@ -101,11 +113,6 @@ class Platformer extends Phaser.Scene {
         my.sprite.player.setOffset(0, 0);
         my.sprite.player.setCollideWorldBounds(true);
         my.sprite.player.body.setMaxVelocityX(this.VELOCITY);
-
-        //add hearts that represent lives in the top left
-        for (let i = 0; i < 3; i++) {
-            this.playerLives.push(this.add.sprite(10 + (20 * i), 10, "lives"));
-        }
 
         //set up attack sprite
         my.sprite.slash = this.physics.add.sprite(my.sprite.player.x + 6, my.sprite.player.y, "slash1").setScale(0.05);
@@ -271,7 +278,7 @@ class Platformer extends Phaser.Scene {
             if(s2.frame.name == 58) {
                 this.levelSong.stop();
                 this.sound.play("exitSfx");
-                this.scene.start("endScene");
+                this.lives.winClear();
             }
         });
 
@@ -280,8 +287,9 @@ class Platformer extends Phaser.Scene {
                 this.sound.play("chestSfx");
                 this.chestGroup.children.entries[0].setFrame(390);
                 this.hasSword = true;
-                my.text.teach = this.add.text(1816, 50, "SWORD AQUIRED", {fontFamily: "'Jersey 15'", fontSize: 150, color: "#fff"}).setOrigin(0.5).setScale(0.1);
-                my.text.teachSword = this.add.text(1816, 70, "Press Mouse1 to Attack", {fontFamily: "'Jersey 15'", fontSize: 100, color: "#fff"}).setOrigin(0.5).setScale(0.1);
+                my.text.teach = this.add.text(1816, 40, "SWORD AQUIRED", {fontFamily: "'Jersey 15'", fontSize: 120, color: "#fff"}).setOrigin(0.5).setScale(0.1);
+                my.text.teachSword = this.add.text(1816, 60, "Press Mouse1 to Attack", {fontFamily: "'Jersey 15'", fontSize: 80, color: "#fff"}).setOrigin(0.5).setScale(0.1);
+                my.text.teachSword = this.add.text(1816, 70, "Sword can be used to break enemy bullets", {fontFamily: "'Jersey 15'", fontSize: 80, color: "#fff"}).setOrigin(0.5).setScale(0.1);
             }
         });
 
@@ -293,9 +301,7 @@ class Platformer extends Phaser.Scene {
             if(!this.dead) {
                 console.log(s2);
                 s2.y = -100;
-                s2.destroy();
-                s2.visible = false;
-                this.bulletGroup.children.entries.splice(this.bulletGroup.children.entries.indexOf(s2), 1);
+                this.bulletGroup.remove(s2, false, true);
                 this.bulletVals.splice(this.bulletGroup.children.entries.indexOf(s2), 1);
                 this.dead = true;
             }
@@ -361,11 +367,6 @@ class Platformer extends Phaser.Scene {
             }
         }
 
-        //handle lives icons moving with camera
-        for (let i = 0; i < this.playerLives.length; i++) {
-            this.playerLives[i].x = this.cameras.main.worldView.x + 10 + (20 * i);
-        }
-
         //check if enemy can shoot and create a bullet if it can
         for (let i = 0; i < my.sprite.enemies.length; i++) {
             let enemy = my.sprite.enemies[i];
@@ -417,13 +418,7 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.body.setVelocityX(0);
             my.sprite.player.anims.play('idle');
             my.vfx.walking.stop();
-            this.playerLives[this.playerLives.length - 1].y = -200;
-            this.playerLives[this.playerLives.length - 1].destroy();
-            this.playerLives.splice(this.playerLives.length - 1, 1);
-            if (this.playerLives.length == 0) {
-                this.levelSong.stop();
-                this.scene.start("failScene");
-            }
+            this.lives.loseLife();
             setTimeout(() => { 
                 my.vfx.death.stop();
                 my.sprite.player.x = this.respawn[0];
