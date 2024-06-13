@@ -19,6 +19,7 @@ class Tutorial extends Phaser.Scene {
         this.walkCtr = 0;
         this.tempCheck = [];
         this.tutorialSong;
+        this.aimDir = 'right';
     }
 
     create() {
@@ -163,8 +164,16 @@ class Tutorial extends Phaser.Scene {
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
 
+        //alternate WASD movement
+        this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+
+        this.wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
         // debug key listener (assigned to D key)
-        this.input.keyboard.on('keydown-D', () => {
+        this.input.keyboard.on('keydown-N', () => {
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
         }, this);
@@ -243,13 +252,16 @@ class Tutorial extends Phaser.Scene {
         }
 
         else {
-            if(cursors.left.isDown) {
+            if(cursors.left.isDown || this.aKey.isDown) {                   //handle left move
                 // TODO: have the player accelerate to the left
                 my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
-                //my.sprite.player.body.setVelocityX(-this.VELOCITY);
+                if(this.aimDir == 'right') {
+                    my.sprite.player.body.setVelocityX(0);
+                }
                 my.sprite.player.setFlip(true, false);
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+                this.aimDir = "left";
 
                 if(my.sprite.player.body.blocked.down && this.walkCtr % 15 == 0) {
                     this.sound.play("walkSfx");
@@ -265,13 +277,16 @@ class Tutorial extends Phaser.Scene {
                     my.vfx.walking.stop();
                 }
 
-            } else if(cursors.right.isDown) {
+            } else if(cursors.right.isDown || this.dKey.isDown) {           //handle right move
                 // TODO: have the player accelerate to the right
                 my.sprite.player.body.setAccelerationX(this.ACCELERATION);
-                //my.sprite.player.body.setVelocityX(this.VELOCITY);
+                if(this.aimDir == 'left') {
+                    my.sprite.player.body.setVelocityX(0);
+                }
                 my.sprite.player.resetFlip();
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+                this.aimDir = "right";
 
                 if(my.sprite.player.body.blocked.down && this.walkCtr % 15 == 0) {
                     this.sound.play("walkSfx");
@@ -302,7 +317,7 @@ class Tutorial extends Phaser.Scene {
                 my.sprite.player.anims.play('jump');
                 my.sprite.player.body.setDragY(this.JUMP_DRAG);
             }
-            if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
+            if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
                 // TODO: set a Y velocity to have the player "jump" upwards (negative Y direction)
                 my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
                 my.vfx.jumping.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);

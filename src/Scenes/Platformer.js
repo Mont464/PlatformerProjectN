@@ -5,11 +5,11 @@ class Platformer extends Phaser.Scene {
 
     init() {
         // variables and settings
-        this.ACCELERATION = 350;
+        this.ACCELERATION = 300;
         this.VELOCITY = 150;
         this.DRAG = 1000;    // DRAG < ACCELERATION = icy slide
         this.physics.world.gravity.y = 800;
-        this.JUMP_VELOCITY = -270;
+        this.JUMP_VELOCITY = -250;
         this.PARTICLE_VELOCITY = 50;
         this.JUMP_DRAG = 70;
         this.jumpsDone = 0;
@@ -250,10 +250,10 @@ class Platformer extends Phaser.Scene {
 
         // debug key listener (assigned to D key)
         this.input.keyboard.on('keydown-N', () => {
-            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear()
             console.log(my.sprite.player.x);
             console.log(my.sprite.player.y);
+            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
+            this.physics.world.debugGraphic.clear()
         }, this);
 
         //set up camera bounds
@@ -287,9 +287,9 @@ class Platformer extends Phaser.Scene {
                 this.sound.play("chestSfx");
                 this.chestGroup.children.entries[0].setFrame(390);
                 this.hasSword = true;
-                my.text.teach = this.add.text(1816, 40, "SWORD AQUIRED", {fontFamily: "'Jersey 15'", fontSize: 120, color: "#fff"}).setOrigin(0.5).setScale(0.1);
-                my.text.teachSword = this.add.text(1816, 60, "Press Mouse1 to Attack", {fontFamily: "'Jersey 15'", fontSize: 80, color: "#fff"}).setOrigin(0.5).setScale(0.1);
-                my.text.teachSword = this.add.text(1816, 70, "Sword can be used to break enemy bullets", {fontFamily: "'Jersey 15'", fontSize: 80, color: "#fff"}).setOrigin(0.5).setScale(0.1);
+                my.text.teach = this.add.text(1240, 50, "SWORD AQUIRED", {fontFamily: "'Jersey 15'", fontSize: 120, color: "#fff"}).setOrigin(0.5).setScale(0.1);
+                my.text.teachSword = this.add.text(1240, 65, "Press Mouse1 to Attack", {fontFamily: "'Jersey 15'", fontSize: 80, color: "#fff"}).setOrigin(0.5).setScale(0.1);
+                my.text.teachSword = this.add.text(1240, 75, "Sword can be used to break enemy bullets", {fontFamily: "'Jersey 15'", fontSize: 80, color: "#fff"}).setOrigin(0.5).setScale(0.1);
             }
         });
 
@@ -299,7 +299,6 @@ class Platformer extends Phaser.Scene {
 
         this.physics.add.overlap(my.sprite.player, this.bulletGroup, (s1, s2) => {
             if(!this.dead) {
-                console.log(s2);
                 s2.y = -100;
                 this.bulletGroup.remove(s2, false, true);
                 this.bulletVals.splice(this.bulletGroup.children.entries.indexOf(s2), 1);
@@ -433,7 +432,9 @@ class Platformer extends Phaser.Scene {
             if(cursors.left.isDown || this.aKey.isDown) {                   //handle left move
                 // TODO: have the player accelerate to the left
                 my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
-                //my.sprite.player.body.setVelocityX(-this.VELOCITY);
+                if(this.aimDir == 'right') {
+                    my.sprite.player.body.setVelocityX(0);
+                }
                 my.sprite.player.setFlip(true, false);
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
@@ -456,7 +457,9 @@ class Platformer extends Phaser.Scene {
             } else if(cursors.right.isDown || this.dKey.isDown) {           //handle right move
                 // TODO: have the player accelerate to the right
                 my.sprite.player.body.setAccelerationX(this.ACCELERATION);
-                //my.sprite.player.body.setVelocityX(this.VELOCITY);
+                if(this.aimDir == 'left') {
+                    my.sprite.player.body.setVelocityX(0);
+                }
                 my.sprite.player.resetFlip();
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);

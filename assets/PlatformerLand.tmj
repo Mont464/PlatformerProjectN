@@ -52,13 +52,13 @@
                 {
                  "gid":390,
                  "height":16,
-                 "id":58,
+                 "id":61,
                  "name":"chest",
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":1808.25,
+                 "x":1232,
                  "y":96.5
                 }],
          "opacity":1,
@@ -589,7 +589,7 @@
          "y":0
         }],
  "nextlayerid":12,
- "nextobjectid":61,
+ "nextobjectid":62,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",

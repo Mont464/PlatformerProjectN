@@ -5,11 +5,11 @@ class Platformer2 extends Phaser.Scene {
 
     init() {
         // variables and settings
-        this.ACCELERATION = 350;
+        this.ACCELERATION = 300;
         this.VELOCITY = 150;
         this.DRAG = 1000;    // DRAG < ACCELERATION = icy slide
         this.physics.world.gravity.y = 800;
-        this.JUMP_VELOCITY = -270;
+        this.JUMP_VELOCITY = -250;
         this.PARTICLE_VELOCITY = 50;
         this.JUMP_DRAG = 70;
         this.jumpsDone = 0;
@@ -30,7 +30,7 @@ class Platformer2 extends Phaser.Scene {
         this.groundLayer;
         this.hasSword = true;
         this.levelSong;
-        this.hasDash = false;
+        this.hasDash = true;
         this.dashCooldown = 0;
         this.lives = this.scene.get("lifeScene");
         this.dashing = 0;
@@ -213,12 +213,13 @@ class Platformer2 extends Phaser.Scene {
 
         my.vfx.dashing = this.add.particles(5, 5, "kenny-particles", {
             frame: ['scorch_01.png', 'scorch_02.png', 'scorch_03.png'],
-            random: true,
-            scale: {start: 0, end: 0.06, ease: 'elastic.in'},
-            lifespan: 250,
-            gravityY: -100,
-            alpha: {start: 0.1, end: 1},
-            duration: 200 
+            //random: true,
+            maxParticles: 20,
+            scale: {start: 0.01, end: 0.06, ease: 'bounce.inOut'},
+            lifespan: 350,
+            //gravityY: -100,
+            alpha: {start: 0.5, end: 1},
+            duration: 250
         });
 
         my.vfx.death = this.add.particles(-5, -5, "kenny-particles", {
@@ -267,7 +268,7 @@ class Platformer2 extends Phaser.Scene {
             if (this.attackCooldown == 0 && this.hasSword == true) {
                 my.sprite.slash.visible = true;
                 my.sprite.slash.anims.play("slash", false);
-                this.attackCooldown = 25;
+                this.attackCooldown = 20;
                 this.sound.play("slashSfx");
             }
         });
@@ -448,7 +449,7 @@ class Platformer2 extends Phaser.Scene {
             }
         }
 
-        //check if player is dead but the animation has not started
+        //check if player is dead but the death animation has not started
         if(this.dead && my.sprite.player.visible == true) {
             my.vfx.death.startFollow(my.sprite.player, my.sprite.player.displayWidth/2, my.sprite.player.displayHeight/2, false);
             my.vfx.death.start();
@@ -493,7 +494,7 @@ class Platformer2 extends Phaser.Scene {
                 }
             }
 
-            if (this.dashing == 0) {
+            if (this.dashing == 0) {                                     //handle end of dash reset
                 my.sprite.player.body.setMaxVelocityX(this.VELOCITY);
                 my.vfx.dashing.stop();
             }
@@ -501,6 +502,9 @@ class Platformer2 extends Phaser.Scene {
             if(cursors.left.isDown || this.aKey.isDown) {                   //handle left move
                 my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
                 my.sprite.player.setFlip(true, false);
+                if(this.aimDir == 'right') {                                //fix sliding when switching directions
+                    my.sprite.player.body.setVelocityX(0);
+                }
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
                 this.aimDir = "left";
@@ -522,6 +526,9 @@ class Platformer2 extends Phaser.Scene {
             } else if(cursors.right.isDown || this.dKey.isDown) {           //handle right move
                 my.sprite.player.body.setAccelerationX(this.ACCELERATION);
                 my.sprite.player.resetFlip();
+                if(this.aimDir == 'left') {                                //fix sliding when switching directions
+                    my.sprite.player.body.setVelocityX(0);
+                }
                 my.sprite.player.anims.play('walk', true);
                 my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
                 this.aimDir = "right";
