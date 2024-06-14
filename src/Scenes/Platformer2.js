@@ -21,6 +21,7 @@ class Platformer2 extends Phaser.Scene {
         this.walkCtr = 0;
         this.tempCheck = [];
         my.sprite.enemies = [];
+        my.sprite.groundEnemies = [];
         my.sprite.enemyBullet = [];
         this.enemyBulletCooldownCounter = 0;
         this.bulletGroup;
@@ -34,6 +35,9 @@ class Platformer2 extends Phaser.Scene {
         this.dashCooldown = 0;
         this.lives = this.scene.get("lifeScene");
         this.dashing = 0;
+        this.coinWell;
+        this.lastCoinX = 0;
+        this.lastCoinY = 0;
     }
 
     create() {
@@ -112,6 +116,14 @@ class Platformer2 extends Phaser.Scene {
             frame: 62
         });
 
+        this.powers = [];
+        for(let i of this.dash) {
+            this.powers.push(i);
+        }
+        for(let i of this.dJump) {
+            this.powers.push(i);
+        }
+
         //to be filled in bullet group
         this.bullets = [];
 
@@ -147,17 +159,23 @@ class Platformer2 extends Phaser.Scene {
         ];
         this.vertCurve = new Phaser.Curves.Spline(this.vertPoints);
 
-        this.vert2Points = [
-            1417.5, 26,
-            1417.5, 74
-        ];
-        this.vert2Curve = new Phaser.Curves.Spline(this.vert2Points);
-
         this.horizPoints = [
             1285, 22,
             1333, 22
         ];
         this.horizCurve = new Phaser.Curves.Spline(this.horizPoints);
+
+        this.groundPoints = [
+            1078, 40,
+            1177, 40
+        ];
+        this.groundCurve = new Phaser.Curves.Spline(this.groundPoints);
+        
+        this.ground2Points = [
+            1222, 152,
+            1096, 152
+        ];
+        this.ground2Curve = new Phaser.Curves.Spline(this.ground2Points);
 
         //create sprites and add them to the sprite array                                          
         let enemy1 = this.add.follower(this.smallCurve, 23, 139, "enemyFrame1");
@@ -166,12 +184,20 @@ class Platformer2 extends Phaser.Scene {
         my.sprite.enemies.push({"sprite":enemy2, "coolDown":35, "shotDir":"left"});
         let enemy3 = this.add.follower(this.horizCurve, 1285, 22, "enemyFrame1").setScale(0.75);
         my.sprite.enemies.push({"sprite":enemy3, "coolDown":40, "shotDir":"down"});
-        //let enemy4 = this.add.follower(this.vert3Curve, 1558, 74, "enemyFrame1").setScale(0.75);
-        //my.sprite.enemies.push({"sprite":enemy4, "coolDown":40, "shotDir":"left"}); 
+        
+        let groundEnemy1 = this.add.follower(this.groundCurve, 1078, 40, "gEnemyFrame1")
+        my.sprite.enemies.push({"sprite":groundEnemy1, "coolDown":null, "shotDir":null});
+        let groundEnemy2 = this.add.follower(this.ground2Curve, 1222, 152, "gEnemyFrame1")
+        my.sprite.enemies.push({"sprite":groundEnemy2, "coolDown":null, "shotDir":null});
 
         //start animations on enemies and make them follow their splines
         for (let e of my.sprite.enemies) {
-            e["sprite"].anims.play("enemy");
+            if(e.coolDown > 0) {
+                e["sprite"].anims.play("enemy");
+            }
+            else {
+                e["sprite"].anims.play("gEnemy");
+            }
             e["sprite"].startFollow({from: 0, to: 1, delay: 0, duration: 5000, repeat: -1, yoyo: true, rotateToPath: false, rotationOffset: -90});
         }
 
@@ -230,10 +256,31 @@ class Platformer2 extends Phaser.Scene {
             duration: 150,
         });
 
+        my.vfx.coinGrab = this.add.particles(5, 5, "kenny-particles", {
+            frame: ['flare_01.png', 'star_04.png'],
+            //random: true,
+            scale: {start: .05, end: 0.01},
+            lifespan: 600,
+            gravityY: -10,
+            alpha: {start: 1, end: 0.1},
+            duration: 450 
+        })
+
+        // create gravity well
+        this.coinWell = my.vfx.coinGrab.createGravityWell({
+            x: 0,
+            y: 0,
+            power: 3,       // strength of gravitational force (larger = stronger)
+            epsilon: 100,   // min. distance for which gravitational force is calculated
+            gravity: 300    // gravitational force of this well (creates "whipping" effect) [also try negatives!]
+        })
+
         my.vfx.walking.stop();
         my.vfx.jumping.stop();
         my.vfx.death.stop();
         my.vfx.dashing.stop();
+        my.vfx.coinGrab.stop();
+
 
         // Create a Phaser group out of the physics arrays
         // This will be used for collision detection below.
@@ -293,6 +340,11 @@ class Platformer2 extends Phaser.Scene {
             if(this.coinCollect == 2) {
                 this.doorGroup.children.entries[0].setFrame(58);
             }
+            this.lastCoinX = obj2.x;
+            this.lastCoinY = obj2.y;
+            my.vfx.coinGrab.x = obj2.x;
+            my.vfx.coinGrab.y = obj2.y;
+            my.vfx.coinGrab.start();
             obj2.destroy(); // remove coin on overlap
             obj2.visible = false;
             obj2.y = -100
@@ -309,6 +361,11 @@ class Platformer2 extends Phaser.Scene {
 
         this.physics.add.overlap(my.sprite.player, this.dashGroup, (obj1, obj2) => {
             this.hasDash = true;
+            this.lastCoinX = obj2.x;
+            this.lastCoinY = obj2.y;
+            my.vfx.coinGrab.x = obj2.x;
+            my.vfx.coinGrab.y = obj2.y;
+            my.vfx.coinGrab.start();
             obj2.destroy(); // remove coin on overlap
             obj2.visible = false;
             obj2.y = -100
@@ -318,6 +375,11 @@ class Platformer2 extends Phaser.Scene {
 
         this.physics.add.overlap(my.sprite.player, this.dJumpGroup, (obj1, obj2) => {
             this.maxJumps = 2;
+            this.lastCoinX = obj2.x;
+            this.lastCoinY = obj2.y;
+            my.vfx.coinGrab.x = obj2.x;
+            my.vfx.coinGrab.y = obj2.y;
+            my.vfx.coinGrab.start();
             obj2.destroy(); // remove coin on overlap
             obj2.visible = false;
             obj2.y = -100
@@ -367,8 +429,8 @@ class Platformer2 extends Phaser.Scene {
 
     //collides for enemies
     collides(a, b) {
-        if (Math.abs(a.x - b.x) > (a.displayWidth/2 + b.displayWidth/10)) return false;
-        if (Math.abs(a.y - b.y) > (a.displayHeight/2 + b.displayHeight/10)) return false;
+        if (Math.abs(a.x - b.x) > (a.displayWidth/2 + b.displayWidth/4)) return false;
+        if (Math.abs(a.y - b.y) > (a.displayHeight/2 + b.displayHeight/4)) return false;
         return true;
     }
 
@@ -405,6 +467,13 @@ class Platformer2 extends Phaser.Scene {
         for(let c of this.coins) {
             if(c.active == true) {
                 c.anims.play('coin', true);
+            }
+        }
+
+        //manage animations for power ups
+        for(let c of this.powers) {
+            if(c.active == true) {
+                c.anims.play('diam', true);
             }
         }
 
@@ -578,6 +647,9 @@ class Platformer2 extends Phaser.Scene {
                     this.jumpsDone++;
                 }
             }
+
+            this.coinWell.x = my.sprite.player.x-this.lastCoinX;
+            this.coinWell.y = my.sprite.player.y-this.lastCoinY;
 
             //handle slash aiming
             if (this.aimDir == "right") {

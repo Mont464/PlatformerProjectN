@@ -31,6 +31,9 @@ class Platformer extends Phaser.Scene {
         this.hasSword = false;
         this.levelSong;
         this.lives = this.scene.get("lifeScene");
+        this.coinWell;
+        this.lastCoinX = 0;
+        this.lastCoinY = 0;
     }
 
     create() {
@@ -201,6 +204,25 @@ class Platformer extends Phaser.Scene {
             duration: 150 
         });
 
+        my.vfx.coinGrab = this.add.particles(5, 5, "kenny-particles", {
+            frame: ['flare_01.png', 'star_04.png'],
+            //random: true,
+            scale: {start: .05, end: 0.01},
+            lifespan: 600,
+            gravityY: -10,
+            alpha: {start: 1, end: 0.1},
+            duration: 450 
+        })
+
+        // create gravity well
+        this.coinWell = my.vfx.coinGrab.createGravityWell({
+            x: 0,
+            y: 0,
+            power: 3,       // strength of gravitational force (larger = stronger)
+            epsilon: 100,   // min. distance for which gravitational force is calculated
+            gravity: 300    // gravitational force of this well (creates "whipping" effect) [also try negatives!]
+        })
+
         my.vfx.death = this.add.particles(-5, -5, "kenny-particles", {
             frame: ['star_01.png', 'star_02.png', 'star_03.png'],
             scale: {start: 0.1, end: 0.3},
@@ -212,6 +234,8 @@ class Platformer extends Phaser.Scene {
         my.vfx.walking.stop();
         my.vfx.jumping.stop();
         my.vfx.death.stop();
+        my.vfx.coinGrab.stop();
+        
 
         // Create a Phaser group out of the physics arrays
         // This will be used for collision detection below.
@@ -240,6 +264,7 @@ class Platformer extends Phaser.Scene {
 
         //set up click for attack
         this.mouseDown = this.input.on('pointerdown', (pointer) => {
+            console.log(pointer.x, pointer.y);
             if (this.attackCooldown == 0 && this.hasSword == true) {
                 my.sprite.slash.visible = true;
                 my.sprite.slash.anims.play("slash", false);
@@ -250,10 +275,12 @@ class Platformer extends Phaser.Scene {
 
         // debug key listener (assigned to D key)
         this.input.keyboard.on('keydown-N', () => {
+            console.log(my.sprite.player);
             console.log(my.sprite.player.x);
             console.log(my.sprite.player.y);
+            console.log(this.coinWell.x, this.coinWell.y);
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear()
+            this.physics.world.debugGraphic.clear();
         }, this);
 
         //set up camera bounds
@@ -261,6 +288,7 @@ class Platformer extends Phaser.Scene {
         this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
         this.cameras.main.setDeadzone(0, 100);
         this.cameras.main.setZoom(this.SCALE);
+        console.log(this.cameras.main);
 
         // Handle collision detection with the physics groups
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
@@ -268,6 +296,11 @@ class Platformer extends Phaser.Scene {
             if(this.coinCollect == 2) {
                 this.doorGroup.children.entries[0].setFrame(58);
             }
+            this.lastCoinX = obj2.x;
+            this.lastCoinY = obj2.y;
+            my.vfx.coinGrab.x = obj2.x;
+            my.vfx.coinGrab.y = obj2.y;
+            my.vfx.coinGrab.start();
             obj2.destroy(); // remove coin on overlap
             obj2.visible = false;
             obj2.y = -100
@@ -511,6 +544,9 @@ class Platformer extends Phaser.Scene {
                     my.vfx.jumping.start();
                 }
             }
+
+            this.coinWell.x = my.sprite.player.x-this.lastCoinX;
+            this.coinWell.y = my.sprite.player.y-this.lastCoinY;
 
             //handle slash aiming
             if (this.aimDir == "right") {

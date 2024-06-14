@@ -25,6 +25,9 @@ class Load extends Phaser.Scene {
         this.load.image("enemyFrame1", "Tiles/Transparent/tile_0383.png");
         this.load.image("enemyFrame2", "Tiles/Transparent/tile_0384.png");
         this.load.image("enemyFrame3", "Tiles/Transparent/tile_0385.png");
+        this.load.image("gEnemyFrame1", "Tiles/Transparent/tile_0360.png");
+        this.load.image("gEnemyFrame2", "Tiles/Transparent/tile_0361.png");
+        this.load.image("gEnemyFrame3", "Tiles/Transparent/tile_0362.png");
 
         //enemy bullet frames
         this.load.image("enemyShot", "PNG (Transparent)/star_08.png");
@@ -42,6 +45,10 @@ class Load extends Phaser.Scene {
         this.load.image("coin2", "Tiles/Transparent/tile_0021y.png");
         this.load.image("coin3", "Tiles/Transparent/tile_0022y.png");
 
+        //power up frames
+        this.load.image("diam1", "Tiles/Transparent/tile_0062b.png");
+        this.load.image("diam2", "Tiles/Transparent/tile_0082b.png");
+
         //fire frames
         this.load.image("fire1", "PNG (Transparent)/muzzle_02r.png");
         this.load.image("fire2", "PNG (Transparent)/muzzle_03r.png");
@@ -50,9 +57,9 @@ class Load extends Phaser.Scene {
 
         // Load tilemap information
         this.load.image("tilemap_tiles", "Tilemap/monochrome_tilemap_packed.png");      // Packed tilemap
-        this.load.tilemapTiledJSON("platformer-level-1", "PlatformerLand.tmj");         // Tilemap in JSON
-        this.load.tilemapTiledJSON("platformer-level-0", "Tutorial.tmj");
-        this.load.tilemapTiledJSON("platformer-level-2", "level2.tmj"); 
+        this.load.tilemapTiledJSON("platformer-level-1", "Tiled/PlatformerLand.tmj");         // Tilemap in JSON
+        this.load.tilemapTiledJSON("platformer-level-0", "Tiled/Tutorial.tmj");
+        this.load.tilemapTiledJSON("platformer-level-2", "Tiled/level2.tmj"); 
         
         // Load the transparent tilemap as a spritesheet
         this.load.spritesheet("tilemap_sheet", "Tilemap/monochrome_tilemap_transparent_packed.png", {
@@ -143,6 +150,18 @@ class Load extends Phaser.Scene {
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'diam',
+            //defaultTextureKey: "platformer_characters",
+            frames: [
+
+                { key: "diam1"},
+                { key: "diam2", duration: -1}
+            ],
+            frameRate: 5,
+            repeat: -1
+        });
+
         //active checkpoint animation
         this.anims.create({
             key: 'fire',
@@ -166,6 +185,18 @@ class Load extends Phaser.Scene {
 
                 { key: "enemyFrame1"},
                 { key: "enemyFrame2", duration: -1},
+            ],
+            frameRate: 5,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'gEnemy',
+            //defaultTextureKey: "platformer_characters",
+            frames: [
+
+                { key: "gEnemyFrame2"},
+                { key: "gEnemyFrame3", duration: -1},
             ],
             frameRate: 5,
             repeat: -1
