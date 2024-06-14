@@ -31,7 +31,7 @@ class Platformer2 extends Phaser.Scene {
         this.groundLayer;
         this.hasSword = true;
         this.levelSong;
-        this.hasDash = true;
+        this.hasDash = false;
         this.dashCooldown = 0;
         this.lives = this.scene.get("lifeScene");
         this.dashing = 0;
@@ -319,14 +319,6 @@ class Platformer2 extends Phaser.Scene {
                 this.sound.play("slashSfx");
             }
         });
-
-        // debug key listener (assigned to N key)
-        this.input.keyboard.on('keydown-N', () => {
-            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear()
-            console.log(my.sprite.player.x);
-            console.log(my.sprite.player.y);
-        }, this);
 
         //set up camera bounds
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);

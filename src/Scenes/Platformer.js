@@ -273,16 +273,6 @@ class Platformer extends Phaser.Scene {
             }
         });
 
-        // debug key listener (assigned to D key)
-        this.input.keyboard.on('keydown-N', () => {
-            console.log(my.sprite.player);
-            console.log(my.sprite.player.x);
-            console.log(my.sprite.player.y);
-            console.log(this.coinWell.x, this.coinWell.y);
-            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear();
-        }, this);
-
         //set up camera bounds
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
